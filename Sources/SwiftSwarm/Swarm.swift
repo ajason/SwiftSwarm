@@ -1,6 +1,6 @@
 //
 //  Swarm.swift
-//  
+//
 //
 //  Created by James Rochabrun on 10/18/24.
 //
@@ -8,25 +8,45 @@
 import Foundation
 import SwiftOpenAI
 
-actor Swarm {
+/// An actor that manages the streaming of agent interactions and tool responses.
+///
+/// The `Swarm` actor coordinates the communication between an agent and tools, handling
+/// the streaming of responses, executing tool calls, and updating context variables during the conversation.
+actor Swarm<Handler: ToolResponseHandler> {
    
    private let client: OpenAIService
-   private let toolResponseHandler: ToolResponseHandler
+   private let toolResponseHandler: Handler
    
-   init(client: OpenAIService, toolResponseHandler: ToolResponseHandler) {
+   /// Initializes a new instance of the `Swarm` actor.
+   ///
+   /// - Parameters:
+   ///   - client: An instance of `OpenAIService` used for making requests.
+   ///   - toolResponseHandler: A handler conforming to `ToolResponseHandler` responsible for processing tool responses.
+   init(client: OpenAIService, toolResponseHandler: Handler) {
       self.client = client
       self.toolResponseHandler = toolResponseHandler
    }
    
+   /// Runs a stream of interactions between the agent and the provided messages.
+   ///
+   /// This function handles the streaming of chat completion, managing tool calls, and updating the agent and context variables.
+   ///
+   /// - Parameters:
+   ///   - agent: The agent responsible for processing the messages.
+   ///   - messages: A list of chat messages to be included in the interaction.
+   ///   - contextVariables: Optional context variables to use during the conversation.
+   ///   - modelOverride: An optional model to override the agent's default model.
+   ///   - maxTurns: The maximum number of turns the agent is allowed to take.
+   ///   - executeTools: A Boolean value to determine whether the agent should execute tools during the process.
+   /// - Returns: An `AsyncThrowingStream` of `StreamChunk` objects, representing the streamed interaction data.
    func runStream(
       agent: Agent,
       messages: [ChatCompletionParameters.Message],
       contextVariables: [String: String] = [:],
       modelOverride: Model? = nil,
-      debug: Bool = false,
       maxTurns: Int = Int.max,
       executeTools: Bool = true)
-   -> AsyncThrowingStream<StreamChunk, Error>
+      -> AsyncThrowingStream<StreamChunk, Error>
    {
       AsyncThrowingStream { continuation in
          Task {
@@ -43,9 +63,7 @@ actor Swarm {
                      agent: activeAgent,
                      history: history,
                      contextVariables: currentContextVariables,
-                     modelOverride: modelOverride,
-                     debug: debug
-                  )
+                     modelOverride: modelOverride)
                   
                   let (content, toolCalls) = try await accumulateStreamContent(completionStream, continuation: continuation)
                   
@@ -59,18 +77,14 @@ actor Swarm {
                   continuation.yield(StreamChunk(delim: "end"))
                   
                   guard let availableToolCalls = toolCalls, !availableToolCalls.isEmpty && executeTools else {
-                     if debug {
-                        print("Ending turn.")
-                     }
+                     debugPrint("Ending turn.")
                      break
                   }
                   
                   let partialResponse = try await handleToolCalls(
                      availableToolCalls,
                      agent: activeAgent,
-                     contextVariables: currentContextVariables,
-                     debug: debug
-                  )
+                     contextVariables: currentContextVariables)
                   
                   history.append(contentsOf: partialResponse.messages)
                   currentContextVariables.merge(partialResponse.contextVariables) { _, new in new }
@@ -79,7 +93,7 @@ actor Swarm {
                   
                   for message in partialResponse.messages {
                      if case .text(let text) = message.content {
-                        continuation.yield(StreamChunk(content: text))
+                        continuation.yield(StreamChunk(content: text, toolCalls: availableToolCalls))
                      }
                   }
                }
@@ -99,10 +113,18 @@ actor Swarm {
       }
    }
    
+   /// Accumulates content from a streaming response.
+   ///
+   /// This function gathers content and tool calls from the streamed chunks and sends updates via the provided continuation.
+   ///
+   /// - Parameters:
+   ///   - stream: The `AsyncThrowingStream` of `ChatCompletionChunkObject` to process.
+   ///   - continuation: A continuation to yield the accumulated content and tool calls as `StreamChunk` objects.
+   /// - Returns: A tuple containing the accumulated content and tool calls.
    private func accumulateStreamContent(
       _ stream: AsyncThrowingStream<ChatCompletionChunkObject, Error>,
       continuation: AsyncThrowingStream<StreamChunk, Error>.Continuation)
-   async throws -> (String, [ToolCall]?)
+      async throws -> (String, [ToolCall]?)
    {
       var content = ""
       var accumulatedTools: [String: (ToolCall, String)] = [:]
@@ -129,7 +151,6 @@ actor Swarm {
             break
          }
       }
-      
       let finalToolCalls = accumulatedTools.isEmpty ? nil : accumulatedTools.map { (_, value) in
          let (toolCall, arguments) = value
          return ToolCall(
@@ -142,64 +163,80 @@ actor Swarm {
       return (content, finalToolCalls)
    }
    
+   /// Retrieves the streamed chat completion from the agent.
+    ///
+    /// This function sends the agent's history and context variables to retrieve a streamed response.
+    ///
+    /// - Parameters:
+    ///   - agent: The agent to use for generating the response.
+    ///   - history: The chat history for the agent to base the response on.
+    ///   - contextVariables: The context variables to pass to the agent.
+    ///   - modelOverride: An optional model to override the agent's default model.
+    /// - Returns: An `AsyncThrowingStream` of `ChatCompletionChunkObject` representing the streamed response.
    private func getChatCompletionStream(
-       agent: Agent,
-       history: [ChatCompletionParameters.Message],
-       contextVariables: [String: String],
-       modelOverride: Model?,
-       debug: Bool)
-      async throws -> AsyncThrowingStream<ChatCompletionChunkObject, Error> {
-       
-       // Add a system message for agent's instructions
-       var updatedHistory = history
-       
-       // Check if a system message with instructions is already present
-       if let lastSystemMessageIndex = updatedHistory.lastIndex(where: { $0.role == "system" }) {
-           // Update the existing system message with the current agent's instructions
-           updatedHistory[lastSystemMessageIndex] = ChatCompletionParameters.Message(
-               role: .system,
-               content: .text(agent.instructions)
-           )
-       } else {
-           // Add a new system message if it doesn't exist
-           let systemMessage = ChatCompletionParameters.Message(
-               role: .system,
-               content: .text(agent.instructions)
-           )
-           updatedHistory.insert(systemMessage, at: 0)
-       }
-       
-       let parameters = ChatCompletionParameters(
-           messages: updatedHistory,
-           model: modelOverride ?? agent.model,
-           toolChoice: agent.toolChoice,
-           tools: agent.tools,
-           parallelToolCalls: agent.parallelToolCalls
-       )
-       
-       return try await client.startStreamedChat(parameters: parameters)
+      agent: Agent,
+      history: [ChatCompletionParameters.Message],
+      contextVariables: [String: String],
+      modelOverride: Model?)
+      async throws -> AsyncThrowingStream<ChatCompletionChunkObject, Error>
+   {
+      
+      // Add a system message for agent's instructions
+      var updatedHistory = history
+      
+      // Check if a system message with instructions is already present
+      if let lastSystemMessageIndex = updatedHistory.lastIndex(where: { $0.role == "system" }) {
+         // Update the existing system message with the current agent's instructions
+         updatedHistory[lastSystemMessageIndex] = ChatCompletionParameters.Message(
+            role: .system,
+            content: .text(agent.instructions)
+         )
+      } else {
+         // Add a new system message if it doesn't exist
+         let systemMessage = ChatCompletionParameters.Message(
+            role: .system,
+            content: .text(agent.instructions)
+         )
+         updatedHistory.insert(systemMessage, at: 0)
+      }
+      
+      let parameters = ChatCompletionParameters(
+         messages: updatedHistory,
+         model: modelOverride ?? agent.model,
+         toolChoice: agent.toolChoice,
+         tools: agent.tools,
+         parallelToolCalls: agent.parallelToolCalls
+      )
+      
+      return try await client.startStreamedChat(parameters: parameters)
    }
-
    
+   /// Handles tool calls within a response, transferring the context and updating the agent.
+   ///
+   /// This function processes tool calls, executes the necessary tools, and updates the agent and context variables.
+   ///
+   /// - Parameters:
+   ///   - toolCalls: A list of tool calls made by the agent during the interaction.
+   ///   - agent: The agent currently managing the conversation.
+   ///   - contextVariables: The context variables associated with the conversation.
+   /// - Returns: A `Response` object that includes the updated messages, agent, and context variables.
    private func handleToolCalls(
       _ toolCalls: [ToolCall],
       agent: Agent,
-      contextVariables: [String: String],
-      debug: Bool)
-   async throws -> Response
+      contextVariables: [String: String])
+      async throws -> Response
    {
       var partialResponse = Response(messages: [], agent: agent, contextVariables: contextVariables)
       
       for toolCall in toolCalls {
          guard let tool = agent.tools.first(where: { $0.function.name == toolCall.function.name }) else {
-            if debug {
-               print("Tool not found:", toolCall.function.name ?? "no name")
-            }
+            debugPrint("Tool not found:", toolCall.function.name ?? "no name")
             continue
          }
          
-         let parameters = execute(arguments: toolCall.function.arguments).toDictionary() ?? [:]
-         let (newAgent, content) = try await toolResponseHandler.handleToolResponse(parameters: parameters)
+         let parameters = toolCall.function.arguments.toDictionary() ?? [:]
+         let newAgent = toolResponseHandler.transferToAgent(parameters)
+         let content = try await toolResponseHandler.handleToolResponseContent(parameters: parameters)
          
          if let newAgent = newAgent {
             partialResponse.agent = newAgent
@@ -207,7 +244,6 @@ actor Swarm {
          let toolMessage = ChatCompletionParameters.Message(
             role: .tool,
             content: .text(content ?? ""),
-          //  content: .text(content ?? "\(toolCall.function.arguments) \n"),
             name: tool.function.name,
             toolCallID: toolCall.id
          )
@@ -215,33 +251,5 @@ actor Swarm {
       }
       
       return partialResponse
-   }
-   
-   private func execute(
-      arguments: String)
-   -> String
-   {
-      print(arguments)
-      return arguments
-   }
-}
-
-struct StreamChunk {
-   var content: String?
-   var toolCalls: [ToolCall]?
-   var delim: String?
-   var response: Response?
-}
-
-
-extension ChatCompletionParameters.Message.ContentType {
-   
-   var text: String? {
-      switch self {
-      case .text(let string):
-         return string
-      default:
-         return nil
-      }
    }
 }
