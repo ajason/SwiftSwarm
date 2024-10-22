@@ -12,26 +12,26 @@ import SwiftOpenAI
 ///
 /// The `StreamChunk` structure is used to capture portions of the response as they are streamed
 /// from the agent, including any content, tool calls, delimiters, or a final response.
-struct StreamChunk {
+public struct StreamChunk {
    
    /// The content of the current chunk, if available.
    ///
    /// This represents a portion of the agent's response as a string, which may be incomplete or streamed progressively.
-   var content: String?
+   public var content: String?
    
    /// A list of tool calls associated with the current chunk, if any.
    ///
    /// These tool calls represent actions that the agent may request or perform as part of generating the response.
-   var toolCalls: [ToolCall]?
+   public var toolCalls: [ToolCall]?
    
    /// A delimiter that may indicate the start or end of a streamed section.
    ///
    /// This optional string can be used to signify when a chunk starts or ends, for example, with `"start"` or `"end"`.
-   var delim: String?
+   public var delim: String?
    
    /// The final response, if this chunk represents the conclusion of the stream.
    ///
    /// This property is set when the streaming process completes and the full `Response` is ready.
-   var response: Response?
+   public var response: Response?
 }
 

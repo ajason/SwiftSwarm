@@ -12,21 +12,21 @@ import SwiftOpenAI
 /// The `Response` structure encapsulates the messages, agent, and context variables
 /// resulting from an agent's execution. It is used to capture the outcome of a session
 /// or a series of interactions with an agent.
-struct Response {
+public struct Response {
    
    /// The list of messages generated during the interaction.
    ///
    /// These messages include all the content exchanged between the agent and the user
    /// or other systems during the response generation.
-   var messages: [ChatCompletionParameters.Message]
+   public var messages: [ChatCompletionParameters.Message]
    
    /// The agent responsible for generating the response.
    ///
    /// This property holds the agent that was active during the generation of the response.
-   var agent: Agent
+   public var agent: Agent
    
    /// A dictionary of context variables that were used or updated during the interaction.
    ///
    /// These variables can store additional context or state information relevant to the agent's responses.
-   var contextVariables: [String: String]
+   public var contextVariables: [String: String]
 }

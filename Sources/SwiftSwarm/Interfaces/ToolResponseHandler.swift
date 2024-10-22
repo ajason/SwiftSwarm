@@ -11,7 +11,7 @@ import Foundation
 ///
 /// `ToolResponseHandler` is designed to manage how tools and agents interact within the system,
 /// allowing for the selection of agents based on parameters and handling the tool response content.
-protocol ToolResponseHandler {
+public protocol ToolResponseHandler {
    
    /// The type of agent that this handler works with.
    ///
@@ -46,7 +46,7 @@ protocol ToolResponseHandler {
    func handleToolResponseContent(parameters: [String: Any]) async throws -> String?
 }
 
-extension ToolResponseHandler {
+public extension ToolResponseHandler {
    
    /// Tries to transfer the tool parameters to a suitable agent based on tool keys.
    ///

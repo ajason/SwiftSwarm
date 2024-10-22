@@ -8,7 +8,7 @@
 import Foundation
 import SwiftOpenAI
 
-extension ChatCompletionParameters.Message.ContentType {
+public extension ChatCompletionParameters.Message.ContentType {
    
    var text: String? {
       switch self {

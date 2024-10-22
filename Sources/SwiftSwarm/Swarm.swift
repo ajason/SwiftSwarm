@@ -12,7 +12,7 @@ import SwiftOpenAI
 ///
 /// The `Swarm` actor coordinates the communication between an agent and tools, handling
 /// the streaming of responses, executing tool calls, and updating context variables during the conversation.
-actor Swarm<Handler: ToolResponseHandler> {
+public actor Swarm<Handler: ToolResponseHandler> {
    
    private let client: OpenAIService
    private let toolResponseHandler: Handler
@@ -22,7 +22,7 @@ actor Swarm<Handler: ToolResponseHandler> {
    /// - Parameters:
    ///   - client: An instance of `OpenAIService` used for making requests.
    ///   - toolResponseHandler: A handler conforming to `ToolResponseHandler` responsible for processing tool responses.
-   init(client: OpenAIService, toolResponseHandler: Handler) {
+   public init(client: OpenAIService, toolResponseHandler: Handler) {
       self.client = client
       self.toolResponseHandler = toolResponseHandler
    }
@@ -39,7 +39,7 @@ actor Swarm<Handler: ToolResponseHandler> {
    ///   - maxTurns: The maximum number of turns the agent is allowed to take.
    ///   - executeTools: A Boolean value to determine whether the agent should execute tools during the process.
    /// - Returns: An `AsyncThrowingStream` of `StreamChunk` objects, representing the streamed interaction data.
-   func runStream(
+   public func runStream(
       agent: Agent,
       messages: [ChatCompletionParameters.Message],
       contextVariables: [String: String] = [:],

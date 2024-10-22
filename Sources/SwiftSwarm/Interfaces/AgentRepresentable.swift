@@ -13,7 +13,7 @@ import Foundation
 /// represented by a raw value (via `RawRepresentable`), and associated with an `Agent` instance.
 ///
 /// This is useful for creating enums or other structures that represent different agents in the system.
-protocol AgentRepresentable: CaseIterable, RawRepresentable where RawValue == String {
+public protocol AgentRepresentable: CaseIterable, RawRepresentable where RawValue == String {
    
    /// The `Agent` instance associated with the conforming type.
    ///
