@@ -10,9 +10,14 @@ import SwiftSwarm
 import SwiftOpenAI
 
 @Observable
-final class TeamDemoViewModel {
+final class TeamDemoViewModel<T: ToolResponseHandler> {
    
-   let swarm = Swarm(client: OpenAIServiceFactory.service(apiKey: "", debugEnabled: true), toolResponseHandler: TeamDemoResponseHandler())
+   init(swarm: Swarm<T>) {
+      self.swarm = swarm
+   }
+   
+   // Swarm is stateless
+   let swarm: Swarm<T>
    
    // Array to store the history of all messages
    var allMessages: [ChatCompletionParameters.Message] = []
@@ -79,7 +84,6 @@ final class TeamDemoViewModel {
                cells.append(newCell)
                currentCellID = newCell.id
             }
-            
          }
          
          // Check if there's a response from the agent

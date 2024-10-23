@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		7B5A9E512CC86672002FF152 /* SwiftSwarmExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E502CC86672002FF152 /* SwiftSwarmExampleApp.swift */; };
-		7B5A9E532CC86672002FF152 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E522CC86672002FF152 /* ContentView.swift */; };
 		7B5A9E552CC86674002FF152 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5A9E542CC86674002FF152 /* Assets.xcassets */; };
 		7B5A9E592CC86674002FF152 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B5A9E582CC86674002FF152 /* Preview Assets.xcassets */; };
 		7B5A9E632CC86674002FF152 /* SwiftSwarmExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E622CC86674002FF152 /* SwiftSwarmExampleTests.swift */; };
@@ -20,6 +19,8 @@
 		7B5A9E852CC868BD002FF152 /* TeamDemoResponseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E842CC868BD002FF152 /* TeamDemoResponseHandler.swift */; };
 		7B5A9E872CC86956002FF152 /* TeamDemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E862CC86956002FF152 /* TeamDemoViewModel.swift */; };
 		7B5A9E892CC869E6002FF152 /* ChatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E882CC869E6002FF152 /* ChatScreen.swift */; };
+		7B5A9E8B2CC8B5F7002FF152 /* ApiKeyIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E8A2CC8B5F7002FF152 /* ApiKeyIntroView.swift */; };
+		7B5A9E8D2CC8B615002FF152 /* OptionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5A9E8C2CC8B615002FF152 /* OptionsListView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,7 +43,6 @@
 /* Begin PBXFileReference section */
 		7B5A9E4D2CC86672002FF152 /* SwiftSwarmExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftSwarmExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B5A9E502CC86672002FF152 /* SwiftSwarmExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftSwarmExampleApp.swift; sourceTree = "<group>"; };
-		7B5A9E522CC86672002FF152 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7B5A9E542CC86674002FF152 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7B5A9E562CC86674002FF152 /* SwiftSwarmExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftSwarmExample.entitlements; sourceTree = "<group>"; };
 		7B5A9E582CC86674002FF152 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -56,6 +56,8 @@
 		7B5A9E842CC868BD002FF152 /* TeamDemoResponseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDemoResponseHandler.swift; sourceTree = "<group>"; };
 		7B5A9E862CC86956002FF152 /* TeamDemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDemoViewModel.swift; sourceTree = "<group>"; };
 		7B5A9E882CC869E6002FF152 /* ChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScreen.swift; sourceTree = "<group>"; };
+		7B5A9E8A2CC8B5F7002FF152 /* ApiKeyIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiKeyIntroView.swift; sourceTree = "<group>"; };
+		7B5A9E8C2CC8B615002FF152 /* OptionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsListView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,7 +112,6 @@
 				7B5A9E812CC867BF002FF152 /* UI */,
 				7B5A9E7E2CC8674E002FF152 /* TeamDemo */,
 				7B5A9E502CC86672002FF152 /* SwiftSwarmExampleApp.swift */,
-				7B5A9E522CC86672002FF152 /* ContentView.swift */,
 				7B5A9E542CC86674002FF152 /* Assets.xcassets */,
 				7B5A9E562CC86674002FF152 /* SwiftSwarmExample.entitlements */,
 				7B5A9E572CC86674002FF152 /* Preview Content */,
@@ -158,6 +159,8 @@
 			children = (
 				7B5A9E822CC867CA002FF152 /* CellViewModel.swift */,
 				7B5A9E882CC869E6002FF152 /* ChatScreen.swift */,
+				7B5A9E8A2CC8B5F7002FF152 /* ApiKeyIntroView.swift */,
+				7B5A9E8C2CC8B615002FF152 /* OptionsListView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -300,11 +303,12 @@
 			files = (
 				7B5A9E872CC86956002FF152 /* TeamDemoViewModel.swift in Sources */,
 				7B5A9E852CC868BD002FF152 /* TeamDemoResponseHandler.swift in Sources */,
+				7B5A9E8B2CC8B5F7002FF152 /* ApiKeyIntroView.swift in Sources */,
 				7B5A9E802CC867B9002FF152 /* Team.swift in Sources */,
-				7B5A9E532CC86672002FF152 /* ContentView.swift in Sources */,
 				7B5A9E832CC867CA002FF152 /* CellViewModel.swift in Sources */,
 				7B5A9E512CC86672002FF152 /* SwiftSwarmExampleApp.swift in Sources */,
 				7B5A9E892CC869E6002FF152 /* ChatScreen.swift in Sources */,
+				7B5A9E8D2CC8B615002FF152 /* OptionsListView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,7 +11,7 @@ import SwiftUI
 struct SwiftSwarmExampleApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+           ApiKeyIntroView()
         }
     }
 }
