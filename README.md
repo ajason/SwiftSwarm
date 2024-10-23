@@ -205,8 +205,9 @@ struct TeamDemoResponseHandler: ToolResponseHandler {
 
 1. The `ToolResponseHandler` associated type must be an enum that conforms to AgentRepresentable.
 
-2. The `handleToolResponseContent` function is triggered when a function call associated with your agent tools occurs. This is where you implement custom logic based on the provided parameters.
-   Note: The `ToolResponseHandler` automatically manages agent switching using the transferToAgent function in a protocol extension. (No need to handle this yourself!).
+2. The `handleToolResponseContent` function is triggered when a function call associated with your agent tools occurs. This is where you implement custom functionality based on the provided parameters. 
+   
+   Note: The `ToolResponseHandler` automatically manages agent switching using the `transferToAgent` function in a protocol extension. 
 
 3. When a function call is triggered, you can retrieve values using the keys defined in your tool definition's parameter properties. For instructions in how to define a tool got to `SwiftOpenAI` [function call documentation](https://github.com/jamesrochabrun/SwiftOpenAI?tab=readme-ov-file#function-calling).
 
