@@ -98,6 +98,8 @@ public actor Swarm<Handler: ToolResponseHandler> {
                   }
                }
                
+               print("Sasha \(activeAgent.name)")
+               
                let finalResponse = Response(
                   messages: Array(history.dropFirst(initialMessageCount)),
                   agent: activeAgent,

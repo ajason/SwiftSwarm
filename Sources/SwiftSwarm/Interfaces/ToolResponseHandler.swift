@@ -56,6 +56,7 @@ public extension ToolResponseHandler {
    /// - Parameter parameters: A dictionary of parameters to match with an agent's tools.
    /// - Returns: An optional `Agent` that matches the provided parameters, or `nil` if no match is found.
    func transferToAgent(_ parameters: [String: Any]) -> Agent? {
+      print("sasha \(parameters)")
       for agent in agents {
           let toolKeys = Set(agent.agent.tools.compactMap { tool -> [String]? in
               tool.function.parameters?.properties?.keys.map { $0 }

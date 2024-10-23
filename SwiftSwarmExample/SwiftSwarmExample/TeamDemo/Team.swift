@@ -16,49 +16,39 @@ enum Team: String, AgentRepresentable  {
    case product = "Product"
    
    var agent: Agent {
-      Agent(
-         name: self.rawValue,
-         model: .gpt4o,
-         instructions: instructions,
-         tools: functionTools,
-         toolChoice: nil)
-   }
-   
-   var instructions: String {
+      
       switch self {
       case .engineer:
-            """
-            You are a technical engineer. ALWAYS:
-            Keep responses focused on technical implementation.
-            If query asks about you, you answer mentioning your role.
-            """
-         
+         Agent(
+            name: self.rawValue,
+            model: .gpt4o,
+            instructions: "You are a technical engineer,if user asks about you, you answer with your name \(self.rawValue)",
+            tools: teamTools,
+            toolChoice: nil)
       case .designer:
-            """
-            You are a UX/UI designer. ALWAYS:
-            Focus on user experience and interface specifications.
-            If query asks about you, you answer mentioning your role.
-            """
-         
+         Agent(
+            name: self.rawValue,
+            model: .gpt4o,
+            instructions: "You are a UX/UI designer, if user asks about you, you answer with your name \(self.rawValue)",
+            tools: teamTools,
+            toolChoice: nil)
       case .product:
-            """
-            You are a product manager. ALWAYS:
-            Focus on business value and user needs.
-            If query asks about you, you answer mentioning your role.
-            """
+         Agent(
+            name: self.rawValue,
+            model: .gpt4o,
+            instructions: "You are a product manager, if user asks about you, you answer with your name \(self.rawValue)",
+            tools: teamTools,
+            toolChoice: nil)
       }
    }
    
-   var functionTools: [ChatCompletionParameters.Tool] {
+   var teamTools: [ChatCompletionParameters.Tool] {
       var tools: [ChatCompletionParameters.Tool] = []
-      
-      // Common tools for all roles
       let transitions = [
-         ("DesignMode", Team.designer),
          ("EngineerMode", Team.engineer),
+         ("DesignMode", Team.designer),
          ("ProductMode", Team.product),
       ]
-      
       for (name, team) in transitions {
          tools.append(.init(function: .init(
             name: name,
@@ -71,21 +61,6 @@ enum Team: String, AgentRepresentable  {
                ],
                required: ["agentID"]))))
       }
-      
-      // Example: Add ProductInfo tool only for Designer
-      if self == .designer {
-         tools.append(.init(function: .init(
-            name: "ProductInfo",
-            strict: nil,
-            description: "Get product information",
-            parameters: .init(
-               type: .object,
-               properties: [
-                  "id": .init(type: .string, description: "Product ID")
-               ],
-               required: ["id"]))))
-      }
-      
       return tools
    }
 }

@@ -8,6 +8,7 @@
 import Foundation
 import SwiftOpenAI
 import SwiftUI
+import SwiftSwarm
 
 struct ChatScreen: View {
    
@@ -15,6 +16,7 @@ struct ChatScreen: View {
    
    @State private var isProcessing = false
    @State private var prompt: String = ""
+   @Environment(\.dismiss) private var dismiss
    
    var body: some View {
       VStack {
@@ -48,6 +50,13 @@ struct ChatScreen: View {
          } label: {
             Image(systemName: "trash")
          }
+         Button {
+            Task {
+               dismiss()
+            }
+         } label: {
+            Image(systemName: "xmark")
+         }
       }
       .padding(.horizontal)
    }
@@ -60,9 +69,10 @@ struct ChatScreen: View {
          Button {
             Task {
                let message = ChatCompletionParameters.Message(role: .user, content: .text(prompt))
+               let agent: Agent = Team.engineer.agent
                try await viewModel.handleConversation(
                   newMessages: [message],
-                  initialAgent: Team.engineer.agent)
+                  initialAgent: agent)
                prompt = ""
             }
             
