@@ -231,6 +231,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
       var partialResponse = Response(messages: [], agent: agent, contextVariables: contextVariables)
       
       for toolCall in toolCalls {
+         print("sasha tool call \(toolCall.function.name ?? "No name")")
          guard let tool = agent.tools.first(where: { $0.function.name == toolCall.function.name }) else {
             debugPrint("Tool not found:", toolCall.function.name ?? "no name")
             continue

@@ -19,12 +19,6 @@ public protocol ToolResponseHandler {
    /// it can be converted to or from an agent.
    associatedtype AgentType: AgentRepresentable
    
-   /// A list of available agents that the handler can use.
-   ///
-   /// These agents represent the various entities or models that can be used in
-   /// response generation, each with specific tools and capabilities.
-   var agents: [AgentType] { get }
-   
    /// Attempts to transfer the tool parameters to a matching agent.
    ///
    /// This method checks the provided parameters to find a suitable agent
@@ -56,7 +50,6 @@ public extension ToolResponseHandler {
    /// - Parameter parameters: A dictionary of parameters to match with an agent's tools.
    /// - Returns: An optional `Agent` that matches the provided parameters, or `nil` if no match is found.
    func transferToAgent(_ parameters: [String: Any]) -> Agent? {
-      print("sasha \(parameters)")
       for agent in agents {
           let toolKeys = Set(agent.agent.tools.compactMap { tool -> [String]? in
               tool.function.parameters?.properties?.keys.map { $0 }
@@ -76,7 +69,7 @@ public extension ToolResponseHandler {
    /// A list of agents conforming to `AgentType`, ensuring that the handler has access to all cases.
    ///
    /// This computed property retrieves all agents that conform to `AgentType` and makes them available for use.
-   var agents: [AgentType] {
+   private var agents: [AgentType] {
       (AgentType.allCases as? [AgentType]) ?? []
    }
 }
