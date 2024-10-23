@@ -17,6 +17,7 @@ SwiftSwarm is open source and accepts contributions PR's are more than welcome!
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
+- [Demo](#demo)
 - [Dependencies](#dependencies)
 
 ## Overview
@@ -62,7 +63,7 @@ to stay on the bleeding edge.
 /// an agent, including the model it uses, its instructions, and its available tools.
 
 public struct Agent {
-      public var name: String
+   public var name: String
    public var model: Model
    public var instructions: String
    public var tools: [ChatCompletionParameters.Tool]
@@ -182,7 +183,9 @@ enum Team: String, AgentRepresentable  {
 
 Note: You can define specific tools for each agent.
 
-### 2 - Now that we have defined our agents, we need to create an object that conforms to ToolResponseHandler. Here's an example:
+### 2 - Defining your tools handler.
+
+Now that we have defined our agents, we need to create an object that conforms to ToolResponseHandler. Here's an example:
 
 ```swift
 struct TeamDemoResponseHandler: ToolResponseHandler {
@@ -200,10 +203,12 @@ struct TeamDemoResponseHandler: ToolResponseHandler {
 }
 ```
 
-a. The `ToolResponseHandler` associated type must be an enum that conforms to AgentRepresentable.
-b. The `handleToolResponseContent` function is triggered when a function call associated with your agent tools occurs. This is where you implement custom logic based on the provided parameters.
+1. The `ToolResponseHandler` associated type must be an enum that conforms to AgentRepresentable.
+
+2. The `handleToolResponseContent` function is triggered when a function call associated with your agent tools occurs. This is where you implement custom logic based on the provided parameters.
    Note: The `ToolResponseHandler` automatically manages agent switching using the transferToAgent function in a protocol extension. (No need to handle this yourself!).
-c. When a function call is triggered, you can retrieve values using the keys defined in your tool definition's parameter properties. For instructions in how to define a tool got to `SwiftOpenAI` [function call documentation](https://github.com/jamesrochabrun/SwiftOpenAI?tab=readme-ov-file#function-calling).
+
+3. When a function call is triggered, you can retrieve values using the keys defined in your tool definition's parameter properties. For instructions in how to define a tool got to `SwiftOpenAI` [function call documentation](https://github.com/jamesrochabrun/SwiftOpenAI?tab=readme-ov-file#function-calling).
 
 ### 3 - Instantiating a Swarm object.
 
@@ -247,6 +252,12 @@ This will print:
 Switched to: Designer
 Content: As a UX/UI designer, I'm here to help you with your design needs. What specific aspect of design do you need input on? Whether it's user interface design, user experience strategy, or even color schemes and typography, feel free to let me know!
 ```
+
+## Demo
+
+Note: SwiftSwarm is stateless. For examples of how to manage agent conversations with state, please visit the [examples folder](https://github.com/jamesrochabrun/SwiftSwarm/tree/main/SwiftSwarmExample) in this repository.
+
+![Screenshot 2024-10-23 at 4 17 34 PM](https://github.com/user-attachments/assets/7a6b70bd-4ab8-4e20-a078-b032fc1ceac7)
 
 ## Dependencies
 
