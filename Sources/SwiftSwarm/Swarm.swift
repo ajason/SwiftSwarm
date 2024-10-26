@@ -97,9 +97,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
                      }
                   }
                }
-               
-               print("Sasha \(activeAgent.name)")
-               
+                              
                let finalResponse = Response(
                   messages: Array(history.dropFirst(initialMessageCount)),
                   agent: activeAgent,
@@ -230,8 +228,10 @@ public actor Swarm<Handler: ToolResponseHandler> {
    {
       var partialResponse = Response(messages: [], agent: agent, contextVariables: contextVariables)
       
+      debugPrint("Handling Tool Call for agent \(agent.name)")
+
       for toolCall in toolCalls {
-         print("sasha tool call \(toolCall.function.name ?? "No name")")
+         debugPrint("Handling Tool \(toolCall.function.name ?? "No name")")
          guard let tool = agent.tools.first(where: { $0.function.name == toolCall.function.name }) else {
             debugPrint("Tool not found:", toolCall.function.name ?? "no name")
             continue
@@ -243,6 +243,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
          
          if let newAgent = newAgent {
             partialResponse.agent = newAgent
+            debugPrint("Handling Tool Call trasnferring to \(newAgent.name)")
          }
          let toolMessage = ChatCompletionParameters.Message(
             role: .tool,
