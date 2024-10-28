@@ -233,7 +233,7 @@ let userMessage = "I need design input"
 let message = ChatCompletionParameters.Message(role: .user, content: .text(userMessage))
 var currentAgent = Team.engineer.agent
 
-let streamChunks = await viewModel.swarm.runStream(agent: currentAgent, messages: [message])
+let streamChunks = await swarm.runStream(agent: currentAgent, messages: [message])
 
 for try await streamChunk in streamChunks {
    content += streamChunk.content ?? ""
