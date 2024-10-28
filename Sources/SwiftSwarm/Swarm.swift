@@ -44,9 +44,8 @@ public actor Swarm<Handler: ToolResponseHandler> {
       messages: [ChatCompletionParameters.Message],
       contextVariables: [String: String] = [:],
       modelOverride: Model? = nil,
-      maxTurns: Int = Int.max,
       executeTools: Bool = true)
-      -> AsyncThrowingStream<StreamChunk, Error>
+   -> AsyncThrowingStream<StreamChunk, Error>
    {
       AsyncThrowingStream { continuation in
          Task {
@@ -56,31 +55,25 @@ public actor Swarm<Handler: ToolResponseHandler> {
                var history = messages
                let initialMessageCount = messages.count
                
-               while history.count - initialMessageCount < maxTurns {
-                  continuation.yield(StreamChunk(delim: "start"))
-                  
-                  let completionStream = try await getChatCompletionStream(
-                     agent: activeAgent,
-                     history: history,
-                     contextVariables: currentContextVariables,
-                     modelOverride: modelOverride)
-                  
-                  let (content, toolCalls) = try await accumulateStreamContent(completionStream, continuation: continuation)
-                  
-                  let currentMessage = ChatCompletionParameters.Message(
-                     role: .assistant,
-                     content: .text(content),
-                     toolCalls: toolCalls
-                  )
-                  history.append(currentMessage)
-                  
-                  continuation.yield(StreamChunk(delim: "end"))
-                  
-                  guard let availableToolCalls = toolCalls, !availableToolCalls.isEmpty && executeTools else {
-                     debugPrint("Ending turn.")
-                     break
-                  }
-                  
+               continuation.yield(StreamChunk(delim: "start"))
+               
+               let completionStream = try await getChatCompletionStream(
+                  agent: activeAgent,
+                  history: history,
+                  contextVariables: currentContextVariables,
+                  modelOverride: modelOverride)
+               
+               let (content, toolCalls) = try await accumulateStreamContent(completionStream, continuation: continuation)
+               
+               let assistantMessage = ChatCompletionParameters.Message(
+                  role: .assistant,
+                  content: .text(content),
+                  toolCalls: toolCalls
+               )
+               history.append(assistantMessage)
+               
+               /// Check if there are available tools.
+               if let availableToolCalls = toolCalls, !availableToolCalls.isEmpty && executeTools {
                   let partialResponse = try await handleToolCalls(
                      availableToolCalls,
                      agent: activeAgent,
@@ -92,12 +85,32 @@ public actor Swarm<Handler: ToolResponseHandler> {
                   activeAgent = partialResponse.agent
                   
                   for message in partialResponse.messages {
-                     if case .text(let text) = message.content {
-                        continuation.yield(StreamChunk(content: text, toolCalls: availableToolCalls))
+                     if case .text(_) = message.content {
+                        // We only need to stream the `availableToolCalls` at this point.
+                        continuation.yield(StreamChunk(content: "", toolCalls: availableToolCalls))
                      }
                   }
+                  
+                  // Get final response after tool execution
+                  let finalStream = try await getChatCompletionStream(
+                     agent: activeAgent,
+                     history: history,
+                     contextVariables: currentContextVariables,
+                     modelOverride: modelOverride)
+                  
+                  let (finalContent, tools) = try await accumulateStreamContent(finalStream, continuation: continuation)
+                  
+                  if !finalContent.isEmpty {
+                     let finalAssistantMessage = ChatCompletionParameters.Message(
+                        role: .assistant,
+                        content: .text(finalContent)
+                     )
+                     history.append(finalAssistantMessage)
+                  }
                }
-                              
+               
+               continuation.yield(StreamChunk(delim: "end"))
+               
                let finalResponse = Response(
                   messages: Array(history.dropFirst(initialMessageCount)),
                   agent: activeAgent,
@@ -112,7 +125,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
          }
       }
    }
-   
+
    /// Accumulates content from a streaming response.
    ///
    /// This function gathers content and tool calls from the streamed chunks and sends updates via the provided continuation.
@@ -130,12 +143,12 @@ public actor Swarm<Handler: ToolResponseHandler> {
       var accumulatedTools: [String: (ToolCall, String)] = [:]
       
       for try await chunk in stream {
-         if let chunkContent = chunk.choices.first?.delta.content {
+         if let chunkContent = chunk.choices.first?.delta.content, !chunkContent.isEmpty {
             content += chunkContent
             continuation.yield(StreamChunk(content: chunkContent))
          }
          
-         if let toolCalls = chunk.choices.first?.delta.toolCalls {
+         if let toolCalls = chunk.choices.first?.delta.toolCalls, !toolCalls.isEmpty {
             for toolCall in toolCalls {
                if let id = toolCall.id {
                   accumulatedTools[id] = (toolCall, toolCall.function.arguments)
@@ -203,10 +216,8 @@ public actor Swarm<Handler: ToolResponseHandler> {
       let parameters = ChatCompletionParameters(
          messages: updatedHistory,
          model: modelOverride ?? agent.model,
-         toolChoice: agent.toolChoice,
          tools: agent.tools,
-         parallelToolCalls: agent.parallelToolCalls
-      )
+         parallelToolCalls: false)
       
       return try await client.startStreamedChat(parameters: parameters)
    }
@@ -231,7 +242,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
       debugPrint("Handling Tool Call for agent \(agent.name)")
 
       for toolCall in toolCalls {
-         debugPrint("Handling Tool \(toolCall.function.name ?? "No name")")
+         debugPrint("Handling Tool Call \(toolCall.function.name ?? "No name")")
          guard let tool = agent.tools.first(where: { $0.function.name == toolCall.function.name }) else {
             debugPrint("Tool not found:", toolCall.function.name ?? "no name")
             continue
@@ -243,7 +254,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
          
          if let newAgent = newAgent {
             partialResponse.agent = newAgent
-            debugPrint("Handling Tool Call trasnferring to \(newAgent.name)")
+            debugPrint("Handling Tool Call transferring to \(newAgent.name)")
          }
          let toolMessage = ChatCompletionParameters.Message(
             role: .tool,

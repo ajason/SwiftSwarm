@@ -40,7 +40,7 @@ struct OptionsListView: View {
                      let swarm = Swarm(client: openAIService, toolResponseHandler: TeamDemoResponseHandler())
                      let viewModel = TeamDemoViewModel(swarm: swarm)
                      ChatScreen(viewModel: viewModel)
-                        .frame(minWidth: 500, minHeight: 800)
+                        .frame(minWidth: 500, minHeight: 500)
                   }
                }
             }

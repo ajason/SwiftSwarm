@@ -67,8 +67,6 @@ public struct Agent {
    public var model: Model
    public var instructions: String
    public var tools: [ChatCompletionParameters.Tool]
-   public var toolChoice: ToolChoice?
-   public var parallelToolCalls: Bool
 }
 ```
 
@@ -160,22 +158,19 @@ enum Team: String, AgentRepresentable  {
                name: self.rawValue,
                model: .gpt4o,
                instructions: "You are a technical engineer, if user asks about you, you answer with your name \(self.rawValue)",
-               tools: [], // <---- you can define specific tools for each agent.
-               toolChoice: nil))
+               tools: [])) // <---- you can define specific tools for each agent.
       case .designer:
             .init(agent: Agent(
                name: self.rawValue,
                model: .gpt4o,
                instructions: "You are a UX/UI designer, if user asks about you, you answer with your name \(self.rawValue)",
-               tools: [], // <---- you can define specific tools for each agent.
-               toolChoice: nil))
+               tools: [])) // <---- you can define specific tools for each agent.
       case .product:
             .init(agent: Agent(
                name: self.rawValue,
                model: .gpt4o,
                instructions: "You are a product manager, if user asks about you, you answer with your name \(self.rawValue)",
-               tools: [], // <---- you can define specific tools for each agent.
-               toolChoice: nil))
+               tools: [])) // <---- you can define specific tools for each agent.
       }
    }
 }

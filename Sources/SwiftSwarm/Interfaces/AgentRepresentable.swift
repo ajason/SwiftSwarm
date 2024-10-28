@@ -54,10 +54,7 @@ public extension AgentRepresentable {
            name: base.name,
            model: base.model,
            instructions: base.instructions,
-           tools: base.tools + orchestrationTools,
-           toolChoice: base.toolChoice,
-           parallelToolCalls: base.parallelToolCalls
-       )
+           tools: base.tools + orchestrationTools)
    }
    
    /// A collection of tools that enable agent-to-agent communication and task delegation.

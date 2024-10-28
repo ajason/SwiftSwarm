@@ -34,30 +34,15 @@ public struct Agent {
    /// responses or executing actions as part of its workflow.
    public var tools: [ChatCompletionParameters.Tool]
    
-   /// The tool choice preference for the agent.
-   ///
-   /// This indicates the agent's preferred method for selecting tools, if specified.
-   public var toolChoice: ToolChoice?
-   
-   /// A flag indicating whether the agent can perform parallel tool calls.
-   ///
-   /// When set to `true`, the agent can execute multiple tools simultaneously
-   /// if needed during its response generation process.
-   public var parallelToolCalls: Bool
-   
    public init(
       name: String,
       model: Model,
       instructions: String,
-      tools: [ChatCompletionParameters.Tool],
-      toolChoice: ToolChoice? = nil,
-      parallelToolCalls: Bool = false)
+      tools: [ChatCompletionParameters.Tool])
    {
       self.name = name
       self.model = model
       self.instructions = instructions
       self.tools = tools
-      self.toolChoice = toolChoice
-      self.parallelToolCalls = parallelToolCalls
    }
 }

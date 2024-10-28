@@ -68,11 +68,13 @@ final class TeamDemoViewModel<T: ToolResponseHandler> {
          
          if let chunkContent = streamChunk.content {
             
-            if let toolCall = streamChunk.toolCalls?.first {
+            if let toolCall = streamChunk.toolCalls?.first,
+               let name = toolCall.function.name,
+                  let agent = Team(rawValue: name) {
                cells.append(CellViewModel(
-                  content: "👤 Switching to \(toolCall.function.name ?? "")",
+                  content: "👤 Switching to \(agent.rawValue)",
                   role: .agent,
-                  agentName: toolCall.function.name ?? ""
+                  agentName: agent.rawValue
                ))
             }
             
