@@ -58,63 +58,49 @@ public actor Swarm<Handler: ToolResponseHandler> {
 
           continuation.yield(StreamChunk(delim: "start"))
 
-          // 替换或添加 System prompt
-          let completionStream = try await getChatCompletionStream(
-            agent: activeAgent,
-            history: history,
-            contextVariables: currentContextVariables,
-            modelOverride: modelOverride)
-
-          // 累积内容和工具调用
-          let (content, toolCalls) = try await accumulateStreamContent(completionStream, continuation: continuation)
-
-          // 将 AI 回答 构建成 assistant 消息
-          let assistantMessage = ChatCompletionParameters.Message(
-            role: .assistant,
-            content: .text(content),
-            toolCalls: toolCalls
-          )
-          history.append(assistantMessage)
-
-          // 检查是否存在可用的工具
-          if let availableToolCalls = toolCalls, !availableToolCalls.isEmpty && executeTools {
-            // 处理工具调用,返回一个 Response
-            let partialResponse = try await handleToolCalls(
-              availableToolCalls,
-              agent: activeAgent,
-              contextVariables: currentContextVariables)
-
-            // 更新历史记录
-            history.append(contentsOf: partialResponse.messages)
-            // 更新上下文变量
-            currentContextVariables.merge(partialResponse.contextVariables) { _, new in new }
-
-            // 更新代理
-            activeAgent = partialResponse.agent
-
-            for message in partialResponse.messages {
-              if case .text(_) = message.content {
-                // We only need to stream the `availableToolCalls` at this point.
-                continuation.yield(StreamChunk(content: "", toolCalls: availableToolCalls))
-              }
-            }
-
-            // 获取最终响应
-            let finalStream = try await getChatCompletionStream(
+          // 循环处理工具调用
+          var hasToolCalls = true
+          while hasToolCalls {
+            // 获取聊天完成流
+            let completionStream = try await getChatCompletionStream(
               agent: activeAgent,
               history: history,
               contextVariables: currentContextVariables,
               modelOverride: modelOverride)
 
             // 累积内容和工具调用
-            let (finalContent, tools) = try await accumulateStreamContent(finalStream, continuation: continuation)
+            let (content, toolCalls) = try await accumulateStreamContent(completionStream, continuation: continuation)
 
-            if !finalContent.isEmpty {
-              let finalAssistantMessage = ChatCompletionParameters.Message(
-                role: .assistant,
-                content: .text(finalContent)
-              )
-              history.append(finalAssistantMessage)
+            // 构建助手消息
+            let assistantMessage = ChatCompletionParameters.Message(
+              role: .assistant,
+              content: .text(content),
+              toolCalls: toolCalls
+            )
+            history.append(assistantMessage)
+
+            // 检查是否存在可用的工具调用
+            guard let availableToolCalls = toolCalls, !availableToolCalls.isEmpty && executeTools else {
+              hasToolCalls = false
+              continue
+            }
+
+            // 处理工具调用
+            let partialResponse = try await handleToolCalls(
+              availableToolCalls,
+              agent: activeAgent,
+              contextVariables: currentContextVariables)
+
+            // 更新历史记录和上下文变量
+            history.append(contentsOf: partialResponse.messages)
+            currentContextVariables.merge(partialResponse.contextVariables) { _, new in new }
+            activeAgent = partialResponse.agent
+
+            // 发送工具调用信息到流
+            for message in partialResponse.messages {
+              if case .text(_) = message.content {
+                continuation.yield(StreamChunk(content: "", toolCalls: availableToolCalls))
+              }
             }
           }
 
