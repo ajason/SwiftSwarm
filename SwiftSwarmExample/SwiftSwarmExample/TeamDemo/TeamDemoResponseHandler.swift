@@ -9,13 +9,14 @@ import Foundation
 import SwiftSwarm
 
 struct TeamDemoResponseHandler: ToolResponseHandler {
-   
-   typealias AgentType = Team
-   
-   func handleToolResponseContent(
-      parameters: [String: Any])
-      async throws -> String?
-   {
-      return nil
-   }
+
+  typealias AgentType = Team
+
+  func handleToolResponseContent(
+    parameters: [String: Any]
+  )
+    async throws -> String?
+  {
+    return nil
+  }
 }
