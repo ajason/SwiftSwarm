@@ -97,11 +97,11 @@ public actor Swarm<Handler: ToolResponseHandler> {
             activeAgent = partialResponse.agent
 
             // 发送工具调用信息到流
-            for message in partialResponse.messages {
-              if case .text(_) = message.content {
-                continuation.yield(StreamChunk(content: "", toolCalls: availableToolCalls))
-              }
-            }
+            // for message in partialResponse.messages {
+            //   if case .text(_) = message.content {
+            //     continuation.yield(StreamChunk(content: "", toolCalls: availableToolCalls))
+            //   }
+            // }
           }
 
           continuation.yield(StreamChunk(delim: "end"))
