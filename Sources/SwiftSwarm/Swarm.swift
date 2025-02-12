@@ -141,12 +141,12 @@ public actor Swarm<Handler: ToolResponseHandler> {
 
     for try await chunk in stream {
       // yield delta 内容， 积累 content
-      if let chunkContent = chunk.choices.first?.delta.content, !chunkContent.isEmpty {
+      if let chunkContent = chunk.choices?.first?.delta?.content, !chunkContent.isEmpty {
         content += chunkContent
         continuation.yield(StreamChunk(content: chunkContent))
       }
 
-      if let toolCalls = chunk.choices.first?.delta.toolCalls, !toolCalls.isEmpty {
+      if let toolCalls = chunk.choices?.first?.delta?.toolCalls, !toolCalls.isEmpty {
         for toolCall in toolCalls {
           if let id = toolCall.id, id != "" {
             accumulatedTools[id] = (toolCall, toolCall.function.arguments)
@@ -161,7 +161,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
       }
 
       // 如果流结束，则退出循环
-      if chunk.choices.first?.finishReason != nil {
+      if chunk.choices?.first?.finishReason != nil {
         break
       }
     }

@@ -3,10 +3,10 @@
     {
       "identity" : "swiftopenai",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jamesrochabrun/SwiftOpenAI",
+      "location" : "https://github.com/ajason/SwiftOpenAI.git",
       "state" : {
         "branch" : "main",
-        "revision" : "e29332ea3e50d9fde6e358d0334226dc77674692"
+        "revision" : "19bdaa1a15599d27544f9367aa184ee396282b0b"
       }
     }
   ],
