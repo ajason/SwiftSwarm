@@ -149,10 +149,10 @@ public actor Swarm<Handler: ToolResponseHandler> {
       if let toolCalls = chunk.choices?.first?.delta?.toolCalls, !toolCalls.isEmpty {
         for toolCall in toolCalls {
           if let id = toolCall.id, id != "" {
-            accumulatedTools[id] = (toolCall, toolCall.function.arguments)
+            accumulatedTools[id] = (toolCall, toolCall.function.arguments ?? "")
           } else if let index = toolCall.index, let existingTool = accumulatedTools.values.first(where: { $0.0.index == index }) {
             // 如果 toolCall 没有 id，则使用 index 来匹配已有的 toolCall
-            let updatedArguments = existingTool.1 + (toolCall.function.arguments)
+            let updatedArguments = existingTool.1 + (toolCall.function.arguments ?? "")
             accumulatedTools[existingTool.0.id ?? ""] = (existingTool.0, updatedArguments)
           }
         }
@@ -256,7 +256,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
         continue
       }
 
-      var parameters = toolCall.function.arguments.toDictionary() ?? [:]
+      var parameters = toolCall.function.arguments?.toDictionary() ?? [:]
       parameters["functionName"] = toolCall.function.name
       // 尝试根据工具键将工具参数转移到合适的代理，如果找到则返回代理，否则返回 nil
       let newAgent = toolResponseHandler.transferToAgent(parameters)
@@ -264,7 +264,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
       let content = try await toolResponseHandler.handleToolResponseContent(parameters: parameters)
       guard let contentFromToolCall = content, !contentFromToolCall.isEmpty else {
         debugPrint("Tool response content is empty")
-        debugPrint("Tool call arguments:", toolCall.function.arguments)
+        debugPrint("Tool call arguments:", toolCall.function.arguments ?? "no arguments")
         debugPrint("Tool call parameters:", parameters)
         continue
       }
