@@ -49,7 +49,7 @@ public actor Swarm<Handler: ToolResponseHandler> {
     -> AsyncThrowingStream<StreamChunk, Error>
   {
     AsyncThrowingStream { continuation in
-      Task {
+      let task = Task {
         do {
           var activeAgent = agent
           var currentContextVariables = contextVariables
@@ -117,6 +117,10 @@ public actor Swarm<Handler: ToolResponseHandler> {
         } catch {
           continuation.finish(throwing: error)
         }
+      }
+
+      continuation.onTermination = { @Sendable _ in
+        task.cancel()
       }
     }
   }
